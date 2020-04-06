@@ -23,6 +23,8 @@ public class Rocket : MonoBehaviour
     enum State { Alive, Dying, Transcending }
     State state = State.Alive;
 
+    bool collisionsDisabled = true;
+
     // Use this for initialization
     void Start()
     {
@@ -39,11 +41,27 @@ public class Rocket : MonoBehaviour
             RespondToRotateInput();
 
         }
+        if (Debug.isDebugBuild)
+        {
+
+            RespondToDebugKeys();
+        }
     }
 
+    private void RespondToDebugKeys()
+    {
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            LoadNextLevel();
+        }
+        else if (Input.GetKeyDown(KeyCode.C))
+        {
+            collisionsDisabled = !collisionsDisabled;//toggle
+        }
+    }
     void OnCollisionEnter(Collision collision)
     {
-        if (state != State.Alive)
+        if (state != State.Alive || collisionsDisabled)
         {
             return;//ignore collision when dead (jeśli martwy to wróć)
         }
@@ -82,7 +100,13 @@ public class Rocket : MonoBehaviour
 
     private void LoadNextLevel()
     {
-        SceneManager.LoadScene(1);//todo allow more then 2 levels
+        int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+        int nextSceneIndex = currentSceneIndex + 1;
+        if (nextSceneIndex==SceneManager.sceneCountInBuildSettings)
+        {
+            nextSceneIndex = 0;
+        }
+        SceneManager.LoadScene(nextSceneIndex);//todo allow more then 2 levels
     }
 
     private void LoadFirstLevel()
